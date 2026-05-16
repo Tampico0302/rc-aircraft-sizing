@@ -51,10 +51,10 @@ if result.stderr:
     print(result.stderr)
 
 if polar_file.exists():
-    print("\nPolar file created:")
-    print(polar_file)
+    print("\nXFOIL check successful.")
+    print(f"Polar file created: {polar_file}")
 
     print("\nPolar file preview:")
     print(polar_file.read_text(errors="ignore")[:2000])
 else:
-    print("\nPolar file was not created.")
+    print("\nXFOIL check failed: polar file was not created.")

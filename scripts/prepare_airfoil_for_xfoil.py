@@ -1,47 +1,69 @@
 from pathlib import Path
+import argparse
 
-project_root = Path(__file__).resolve().parents[1]
 
-input_file = project_root / "data" / "ishii.txt"
-output_file = project_root / "data" / "ishii_xfoil.dat"
+def prepare_airfoil_for_xfoil(airfoil_name):
+    project_root = Path(__file__).resolve().parents[1]
 
-points = []
+    input_file = project_root / "data" / f"{airfoil_name}.txt"
+    output_file = project_root / "data" / f"{airfoil_name}_xfoil.dat"
 
-with open(input_file, "r", encoding="utf-8") as file:
-    for line in file:
-        line = line.strip()
+    if not input_file.exists():
+        raise FileNotFoundError(f"Input airfoil file not found: {input_file}")
 
-        if not line:
-            continue
+    points = []
 
-        parts = line.replace(",", ".").split()
+    with open(input_file, "r", encoding="utf-8") as file:
+        for line in file:
+            line = line.strip()
 
-        if len(parts) < 2:
-            continue
+            if not line:
+                continue
 
-        x = float(parts[0])
-        y = float(parts[1])
+            parts = line.replace(",", ".").split()
 
-        point = (x, y)
+            if len(parts) < 2:
+                continue
 
-        # remove consecutive duplicate points
-        if not points or point != points[-1]:
-            points.append(point)
+            try:
+                x = float(parts[0])
+                y = float(parts[1])
+            except ValueError:
+                continue
 
-# remove duplicate leading/trailing issue if first and last are identical
-if len(points) > 1 and points[0] == points[-1]:
-    points.pop()
+            point = (x, y)
 
-with open(output_file, "w", encoding="utf-8") as file:
-    file.write("Ishii\n")
-    for x, y in points:
-        file.write(f"{x:.7f} {y:.7f}\n")
+            # Remove consecutive duplicate points
+            if not points or point != points[-1]:
+                points.append(point)
 
-print(f"Created: {output_file}")
-print(f"Number of points: {len(points)}")
-print("First 5 points:")
-for point in points[:5]:
-    print(point)
-print("Last 5 points:")
-for point in points[-5:]:
-    print(point)
+    # Remove duplicate first/last point if present
+    if len(points) > 1 and points[0] == points[-1]:
+        points.pop()
+
+    if len(points) < 3:
+        raise ValueError("Not enough valid coordinate points were found.")
+
+    with open(output_file, "w", encoding="utf-8") as file:
+        file.write(f"{airfoil_name}\n")
+
+        for x, y in points:
+            file.write(f"{x:.7f} {y:.7f}\n")
+
+    print(f"Created: {output_file}")
+    print(f"Number of points: {len(points)}")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Prepare an airfoil coordinate file for XFOIL."
+    )
+
+    parser.add_argument(
+        "airfoil_name",
+        help="Airfoil name without extension. Example: ishii for data/ishii.txt",
+    )
+
+    args = parser.parse_args()
+
+    prepare_airfoil_for_xfoil(args.airfoil_name)
