@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+
+.vs/
+.vscode/
+.idea/
+
+xfoil_work/
+
+.env
+.venv/
+venv/
+
+.DS_Store
+
+aircraft/aero_analysis_old.py
